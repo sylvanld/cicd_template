@@ -100,3 +100,7 @@ def merge_current_branch():
     subprocess.call(['git', 'merge', '--squash', merged_branch])
     subprocess.call(['git', 'commit', '-m', squash_message])
     subprocess.call(['git', 'push', '-u', 'origin', 'main'])
+
+    input('%s branch will be deleted (press [enter] to continue, [ctrl+c] to abort)'%branch_type)
+    subprocess.call(['git', 'branch', '-D', merged_branch])
+    subprocess.call(['git', 'push', '--delete', 'origin', merged_branch])
