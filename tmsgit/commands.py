@@ -150,6 +150,34 @@ def show_commit_diff(compared_branch):
         for c in diff_commits])
     print(diff_repr)
 
+import inspect
+def file_exist_or_create(filepath, default_content):
+    try:
+        with open(filepath) as file:
+            pass
+    except FileNotFoundError:
+        directory = os.path.abspath(os.path.dirname(filepath))
+        os.makedirs(directory, exist_ok=True)
+        with open(filepath, 'w') as version:
+            version.write(inspect.cleandoc(default_content))
+
+
+def initialize_project():
+    file_exist_or_create('docs/changelog.md', default_content="""
+    # ChangeLog
+
+    > Below are described significant changes that occured in this project...
+
+    ## Releases
+    ## Unreleased work
+    """)
+    file_exist_or_create('setup.cfg', default_content="""
+    [bumpversion]
+    current_version = 0.0.1
+    commit = True
+    tag = True
+    """)
+
 
 def fix_previous_commit():
     """

@@ -1,4 +1,9 @@
-## Changelog
+# ChangeLog
+
+> Below are described significant changes that occured in this project...
+
+## Releases
+## Unreleased work
 
 ### [feature] Automatic changelog generation. (2020-12-21)
 - Simple changelog generation.
@@ -15,3 +20,8 @@
 
 ### [devops] Restructure package. (2020-12-21)
 - Remove one level of nesting in structure.
+
+### [feature] Add init command. (2020-12-21)
+- Generate project assets using init command.
+- Create changelog and bump setup on init.
+- Add parser for init command.
