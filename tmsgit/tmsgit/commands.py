@@ -150,3 +150,12 @@ def show_commit_diff(compared_branch):
         for c in diff_commits])
     print(diff_repr)
 
+
+def fix_previous_commit():
+    """
+    Rollback last commit, and integrates current changes as a fix.
+    """
+    last_commit = extract_commits_from_logs(['git', 'log'])[0]
+    subprocess.call(['git', 'reset', 'HEAD~1'])
+    subprocess.call(['git', 'add', '.'])
+    subprocess.call(['git', 'commit', '-m', last_commit['message']])

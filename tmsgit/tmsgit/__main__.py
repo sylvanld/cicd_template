@@ -23,6 +23,10 @@ def register_log_parser(subparsers):
     create_parser.add_argument('--compared', type=str, default='main', help='Other branch to compare commit diff.')
 
 
+def register_fix_parser(subparsers):
+    create_parser = subparsers.add_parser('fix', help='Rewrite last commit to integrate current changes.')
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='command')
@@ -32,6 +36,7 @@ def parse_args():
     register_save_parser(subparsers)
     register_commit_parser(subparsers)
     register_log_parser(subparsers)
+    register_fix_parser(subparsers)
 
     args = parser.parse_args()
     if not args.command:
@@ -59,3 +64,6 @@ def main():
     elif args.command == 'log':
         from .commands import show_commit_diff
         show_commit_diff(args.compared)
+    elif args.command == 'fix':
+        from .commands import fix_previous_commit
+        fix_previous_commit()
