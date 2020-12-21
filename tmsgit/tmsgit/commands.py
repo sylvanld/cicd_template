@@ -1,3 +1,5 @@
+import os
+import datetime
 import subprocess
 
 
@@ -82,6 +84,26 @@ def create_commit():
     subprocess.call(['git', 'commit', '-m', message])
 
 
+def enforce_changelog(filepath):
+    """
+    Create changelog and its folder if it does not exists.
+    """
+    filepath = os.path.abspath(filepath)
+    directory = os.path.dirname(filepath)
+    subprocess.call(['mkdir', '-p', directory])
+
+
+def update_changelog(message, descriptions):
+    """
+    Append commits diff in changelog.
+    """
+    enforce_changelog('docs/changelog.md')
+    datestr = datetime.datetime.now().strftime('%Y-%m-%d')
+    with open('docs/changelog.md', 'a') as changelog:
+        changelog.write('%s (%s)\n'%(message, datestr))
+        changelog.write('\n'.join(descriptions))
+
+
 def merge_current_branch():
     merged_branch = get_current_branch()
     branch_types = ['feature', 'hotfix', 'bugfix', 'devops']
@@ -93,9 +115,14 @@ def merge_current_branch():
     branch_type, branch_name = merged_branch.split('/')
     message = "[%s] %s" % (branch_type, normalize_sentence(branch_name))
     descriptions = [commit['message'] for commit in extract_commits_from_logs(['git', 'log', 'main..'+merged_branch])]
-    
-    squash_message = message + "\n\n" + "\n".join(['- %s' % description for description in descriptions if description != '[wip]'])
+    descriptions = ['- %s' % description for description in descriptions if description != '[wip]']
 
+    # update changelog
+    update_changelog(message, descriptions)
+    save_current_changes()
+
+    squash_message = message + "\n\n" + "\n".join(descriptions)
+    
     subprocess.call(['git', 'checkout', 'main'])
     subprocess.call(['git', 'merge', '--squash', merged_branch])
     subprocess.call(['git', 'commit', '-m', squash_message])
@@ -122,3 +149,4 @@ def show_commit_diff(compared_branch):
         "Commit:\t%s\nAuthor:\t%s\nDate:\t%s\n\n\t%s"%(c['commit_sha'], c['author'], c['date'], c['message']) 
         for c in diff_commits])
     print(diff_repr)
+
