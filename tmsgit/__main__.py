@@ -1,5 +1,5 @@
 import argparse
-
+import argcomplete
 
 def register_merge_parser(subparsers):
     merge_parser = subparsers.add_parser('merge', help='Merge current branch in main branch, generating changelog, with a nice message')
@@ -37,6 +37,8 @@ def parse_args():
     register_commit_parser(subparsers)
     register_log_parser(subparsers)
     register_fix_parser(subparsers)
+
+    argcomplete.autocomplete(parser)
 
     args = parser.parse_args()
     if not args.command:
