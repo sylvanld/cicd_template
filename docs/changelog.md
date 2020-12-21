@@ -12,3 +12,6 @@
 - Add docstring to 'fix_previous_commit'.
 - Add logic for fix command.
 - Add parser for 'fix' command.
+
+### [devops] Restructure package. (2020-12-21)
+- Remove one level of nesting in structure.
