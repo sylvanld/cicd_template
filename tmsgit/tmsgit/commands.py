@@ -100,7 +100,7 @@ def update_changelog(message, descriptions):
     enforce_changelog('docs/changelog.md')
     datestr = datetime.datetime.now().strftime('%Y-%m-%d')
     with open('docs/changelog.md', 'a') as changelog:
-        changelog.write('%s (%s)\n'%(message, datestr))
+        changelog.write('\n\n### %s (%s)\n'%(message, datestr))
         changelog.write('\n'.join(descriptions))
 
 
