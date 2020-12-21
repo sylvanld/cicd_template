@@ -1,6 +1,10 @@
 import argparse
 
 
+def register_merge_parser(subparsers):
+    merge_parser = subparsers.add_parser('merge', help='Merge current branch in main branch, generating changelog, with a nice message')
+
+
 def register_commit_parser(subparsers):
     commit_parser = subparsers.add_parser('commit', help='Create a commit including current changes and [wip] previous commits')
 
@@ -18,6 +22,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='command')
 
+    register_merge_parser(subparsers)
     register_create_parser(subparsers)
     register_save_parser(subparsers)
     register_commit_parser(subparsers)
@@ -42,3 +47,6 @@ def main():
     elif args.command == 'commit':
         from .commands import create_commit
         create_commit()
+    elif args.command == 'merge':
+        from .commands import merge_current_branch
+        merge_current_branch()

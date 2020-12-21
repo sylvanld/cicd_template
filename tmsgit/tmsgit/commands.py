@@ -1,6 +1,11 @@
 import subprocess
 
 
+def get_current_branch():
+    p = subprocess.Popen(['git', 'branch', '--show-current'], stdout=subprocess.PIPE)
+    return p.stdout.read().decode('utf-8').strip()
+
+
 def input_branch_name(branch_type):
     description = ""
     while len(description) < 4 or len(description) > 30:
@@ -71,3 +76,15 @@ def create_commit():
 
     subprocess.call(["git", "reset", "--soft", "HEAD~%s"%squash_number])
     subprocess.call(['git', 'commit', '-m', message])
+
+
+def merge_current_branch():
+    current_branch = get_current_branch()
+    branch_types = ['feature', 'hotfix', 'bugfix', 'devops']
+    mergeable_branch = any([current_branch.startswith(branch_type) for branch_type in branch_types])
+
+    if not mergeable_branch:
+        raise Exception("Branch prefix must be one of %s"%branch_types)
+
+    messages = [commit['message'] for commit in extract_commits_from_logs(['git', 'log', 'main..'+current_branch])]
+    print(messages)
