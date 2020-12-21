@@ -21,5 +21,5 @@ def create_branch(branch_type):
 
     # create branch locally and push it to remote
     subprocess.call(['git', 'checkout', '-b', branch_name])
-    subprocess.call(['git', 'push', '--delete', 'origin', branch_name])
+    subprocess.call(['git', 'push', '-u', 'origin', branch_name])
     
