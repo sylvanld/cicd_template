@@ -5,7 +5,7 @@ def input_branch_name(branch_type):
     while len(description) < 4 or len(description) > 30:
         description = input('branch description: ')
         if len(description) < 4 or len(description) > 30:
-            print('len(description) >= 4 and len(description) <= 30')
+            print('len(description) >= 4 and len(description) <= 30 ===> current:', len(description))
     return branch_type.lower() + '/' + description.lower().replace(' ', '_')
     
 
