@@ -6,6 +6,10 @@ def get_current_branch():
     return p.stdout.read().decode('utf-8').strip()
 
 
+def normalize_sentence(sentence):
+    return sentence[0].upper() + sentence[1:].replace('_', ' ') + '.'*(not sentence[-1]=='.')
+
+
 def input_branch_name(branch_type):
     description = ""
     while len(description) < 4 or len(description) > 30:
@@ -79,12 +83,20 @@ def create_commit():
 
 
 def merge_current_branch():
-    current_branch = get_current_branch()
+    merged_branch = get_current_branch()
     branch_types = ['feature', 'hotfix', 'bugfix', 'devops']
-    mergeable_branch = any([current_branch.startswith(branch_type) for branch_type in branch_types])
+    mergeable_branch = any([merged_branch.startswith(branch_type + '/') for branch_type in branch_types])
 
     if not mergeable_branch:
         raise Exception("Branch prefix must be one of %s"%branch_types)
 
-    messages = [commit['message'] for commit in extract_commits_from_logs(['git', 'log', 'main..'+current_branch])]
-    print(messages)
+    branch_type, branch_name = merged_branch.split('/')
+    message = "[%s] %s" % (branch_type, normalize_sentence(branch_name))
+    descriptions = [commit['message'] for commit in extract_commits_from_logs(['git', 'log', 'main..'+merged_branch])]
+    
+    squash_message = message + "\n\n" + "\n".join(['- %s' % description for description in descriptions if description != '[wip]'])
+
+    subprocess.call(['git', 'checkout', 'main'])
+    subprocess.call(['git', 'merge', '--squash', merged_branch])
+    subprocess.call(['git', 'commit', '-m', squash_message])
+    subprocess.call(['git', 'push', '-u', 'origin', 'main'])
