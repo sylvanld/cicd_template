@@ -104,3 +104,21 @@ def merge_current_branch():
     input('%s branch will be deleted (press [enter] to continue, [ctrl+c] to abort)'%branch_type)
     subprocess.call(['git', 'branch', '-D', merged_branch])
     subprocess.call(['git', 'push', '--delete', 'origin', merged_branch])
+
+
+def show_commit_diff(compared_branch):
+    current_branch = get_current_branch()
+
+    command = ['git', 'log']
+    if current_branch != compared_branch:
+        command.append('%s..%s'%(compared_branch, current_branch))
+    diff_commits = extract_commits_from_logs(command)
+    
+    if len(diff_commits) == 0:
+        print('No difference between branches', current_branch, 'and', compared_branch)
+        exit(0)
+
+    diff_repr = '\n\n'.join([
+        "Commit:\t%s\nAuthor:\t%s\nDate:\t%s\n\n\t%s"%(c['commit_sha'], c['author'], c['date'], c['message']) 
+        for c in diff_commits])
+    print(diff_repr)

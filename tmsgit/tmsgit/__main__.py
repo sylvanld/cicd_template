@@ -18,6 +18,11 @@ def register_create_parser(subparsers):
     create_parser.add_argument('branch_type', choices=['feature', 'hotfix', 'bugfix', 'devops'])
 
 
+def register_log_parser(subparsers):
+    create_parser = subparsers.add_parser('log', help='Display commits difference between this branch and selected branch (default main)')
+    create_parser.add_argument('--compared', type=str, default='main', help='Other branch to compare commit diff.')
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='command')
@@ -26,6 +31,7 @@ def parse_args():
     register_create_parser(subparsers)
     register_save_parser(subparsers)
     register_commit_parser(subparsers)
+    register_log_parser(subparsers)
 
     args = parser.parse_args()
     if not args.command:
@@ -50,3 +56,6 @@ def main():
     elif args.command == 'merge':
         from .commands import merge_current_branch
         merge_current_branch()
+    elif args.command == 'log':
+        from .commands import show_commit_diff
+        show_commit_diff(args.compared)
