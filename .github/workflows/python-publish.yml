@@ -18,7 +18,7 @@ jobs:
         id: changelog
         run: |
           changelog=$(cat docs/changelog.md)
-          echo "::set-output name=changes::$(changelog)\n"
+          echo "::set-output name=changes::${changelog}\n"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
