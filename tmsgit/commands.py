@@ -1,6 +1,8 @@
 import os
+import re
 import datetime
 import subprocess
+from collections import defaultdict
 
 
 def get_current_branch():
@@ -52,7 +54,6 @@ def save_current_changes():
 
 
 def extract_commits_from_logs(command):
-    import re
     LOG_COMMIT_PATTERN = re.compile("(?:^|\n)commit\s+(?P<commit_sha>\w+).+\nAuthor:\s+(?P<author>.+)\nDate:\s+(?P<date>.+)\n\n\s+(?P<message>.+)")
     
     p = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -115,7 +116,7 @@ def merge_current_branch():
     branch_type, branch_name = merged_branch.split('/')
     message = "[%s] %s" % (branch_type, normalize_sentence(branch_name))
     descriptions = [commit['message'] for commit in extract_commits_from_logs(['git', 'log', 'main..'+merged_branch])]
-    descriptions = ['- %s' % description for description in descriptions if description != '[wip]']
+    descriptions = ['- %s' % description for description in descriptions if description != '[wip]' and not description.startswith('[pre-release]')]
 
     # update changelog
     update_changelog(message, descriptions)
@@ -175,6 +176,7 @@ def initialize_project():
     [bumpversion]
     current_version = 0.0.1
     commit = True
+    message = [release] Publish release {new_version}
     tag = True
     """)
 
@@ -187,3 +189,66 @@ def fix_previous_commit():
     subprocess.call(['git', 'reset', 'HEAD~1'])
     subprocess.call(['git', 'add', '.'])
     subprocess.call(['git', 'commit', '-m', last_commit['message']])
+
+
+def input_release_type():
+    release_type = "?"
+    while release_type not in ('', 'patch', 'minor', 'major'):
+        release_type = input('release type (default=patch): ')
+    return release_type if release_type else 'patch'
+
+
+def current_date():
+    return datetime.datetime.now().strftime('%Y-%m-%d')
+
+
+def get_current_version():
+    with open('setup.cfg') as setup:
+        version_row = [row for row in setup.read().split('\n') if row.startswith('current_version')][0]
+    return version_row.split('=')[1].strip()
+
+
+def create_release():
+    release_type = input_release_type()
+    subprocess.call(['bump2version', release_type])
+    current_version = get_current_version()
+
+    # parse changelog and determine breakpoints
+    with open('docs/changelog.md') as changelog:
+        changelog_rows = changelog.read().split('\n')
+    
+    releases_index = changelog_rows.index('## Releases')
+    unreleased_index = changelog_rows.index('## Unreleased work')
+    changelog_length = len(changelog_rows)
+    
+    # iterate through unreleased work and sort it by category
+    categories = defaultdict(str)
+    category_pattern = re.compile('###\s\[(?P<category>\w+)\]\s(?P<title>.+\.)')
+    current_category = None
+    for k in range(unreleased_index+1, changelog_length):
+        if changelog_rows[k].startswith('###'):
+            info = category_pattern.search(changelog_rows[k]).groupdict()
+            current_category = info['category'][0].upper() + info['category'][1:]
+            categories[current_category] += '- ' + info['title'] + "\n"
+        elif changelog_rows[k].startswith('-'):
+            categories[current_category] += '\t' + changelog_rows[k] + "\n"
+
+    # write each feature/bugfix/... in release description per-category
+    release_description = "\n### %s - %s\n" % (current_version, current_date())
+    for category, content in categories.items():
+        release_description += '\n**%s**'%category + '\n\n'
+        release_description +=  content
+    
+    #print(release_description)
+    changelog = '\n'.join(changelog_rows[:releases_index+1]) \
+            + '\n' + release_description + '\n' \
+            + '\n'.join(changelog_rows[releases_index+1:unreleased_index]) \
+            + '## Unreleased work'
+    
+    with open('docs/changelog.md', 'w') as changelog_file:
+        changelog_file.write(changelog)
+
+    subprocess.call(['git', 'add', '.'])
+    subprocess.call(['git', 'commit', '-m', '[release] Publish release %s'%current_version])
+    subprocess.call(['git', 'tag', current_version, '-m', 'Release %s'%current_version])
+    subprocess.call(['git', 'push', '--follow-tags'])

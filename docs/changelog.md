@@ -25,3 +25,15 @@
 - Generate project assets using init command.
 - Create changelog and bump setup on init.
 - Add parser for init command.
+
+### [feature] Add release command. (2020-12-22)
+- Manually create tag and deploy it on release.
+- Fix version incremented twice.
+- Auto update setup version on release.
+- Bump version before creating changelog.
+- Don't use bump2version to commit nor tag.
+- Let bump2version manage commit.
+- Parse and increment current version to populate changelog.
+- Do changelog update on release, and bump version.
+- Adapt release message to be homogeneous.
+- Create functions to generate changelog on release.

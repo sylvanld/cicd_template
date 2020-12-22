@@ -31,6 +31,9 @@ def register_init_parser(subparsers):
     create_parser = subparsers.add_parser('init', help='Create default configuration files in repository.')
 
 
+def register_release_parser(subparsers):
+    release_parser = subparsers.add_parser('release', help='Publish new release (increment version, changelog...)')
+
 def parse_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='command')
@@ -42,6 +45,7 @@ def parse_args():
     register_log_parser(subparsers)
     register_fix_parser(subparsers)
     register_init_parser(subparsers)
+    register_release_parser(subparsers)
 
     argcomplete.autocomplete(parser)
 
@@ -77,3 +81,6 @@ def main():
     elif args.command == 'init':
         from .commands import initialize_project
         initialize_project()
+    elif args.command == 'release':
+        from .commands import create_release
+        create_release()
